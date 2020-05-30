@@ -1,0 +1,27 @@
+﻿@model IEnumerable<MyTrainer.ViewModels.ExerciseVM>;
+
+<div id="exercise" class="exercise d-flex flex-column flex-sm-row justify-content-between align-items-center">
+    <div id="details">
+        <p class="exerciseType">Alege exercițiul</p>
+        @if (Model.Any())
+        {
+            <select id="selectExercise" class="form-control">
+                @foreach (var item in Model)
+                 {
+                    <option value="@item.Script+@item.Type+@item.Id">
+                        @item.Name
+                    </option>
+                 }
+
+            </select>
+        }
+        else
+        {
+            <p class="font-italic" style="color:cyan;"><i class="fa fa-ban"></i> Nu există exerciții disponibile</p>
+        }
+    </div>
+    <button id="start" class="btn start">Începe exercițiul</button>
+</div>
+<script>
+    document.getElementById("start").addEventListener("click", startReps);
+</script>

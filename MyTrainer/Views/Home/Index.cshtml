@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Antrenorul tău exclusiv";
+    //var member = await _accountClient.GetCurrentClient();
+}
+
+<div class="box">
+    <div class="header container-fluid">
+        <div class="container p-1 d-flex flex-row align-items-center justify-content-between">
+            <div class="font-italic">
+                <h2>MY TRAINER</h2>
+            </div>
+            <div class="d-flex flex-row align-items-center" style="color:cyan; font-family:'Nunito', sans-serif">
+                <i class="fa fa-user-circle-o" style="font-size:35px;"></i> <a href="#" id="popi" class="d-inline-block nav-link" style="color:cyan;" data-toggle="popover" data-placement="bottom" title="Some tooltip text!" data-content="Some Content!">@ViewBag.Username</a>
+            </div>
+        </div>
+    </div>
+    <div id="pageContent" class="page-content">
+        <div class="d-flex flex-column align-items-center justify-content-center">
+            <canvas id="canvas" style="position:absolute; transform: rotateY(180deg); -webkit-transform: rotateY(180deg); -moz-transform: rotateY(180deg);"></canvas>
+            
+            <video id="video" autoplay style="display: none; position: absolute; transform: rotateY(180deg); -webkit-transform: rotateY(180deg); -moz-transform: rotateY(180deg);"></video>
+        </div>
+    </div>
+    <div class="note w-100 position-relative">
+        <div class="container-fluid warning" id="alert">
+            <p class="text-center" style="font-family: 'Anton', sans-serif; color: cyan; font-size: 30px; font-style: italic;">
+                ATENȚIE!
+            </p>
+            <p class="text-center" id="alertMessage" style="font-size: 18px;">mesaj.</p>
+        </div>
+        <div id="noteContent" class="w-100 p-3 d-flex flex-row align-content-center justify-content-center"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('[data-toggle="popover"]').popover({
+                html: true
+            })
+        });
+
+        var popi = document.getElementById("popi");
+
+        popi.title = '<span class="text-center d-block">Contul meu</span>';
+        popi.setAttribute("data-content",
+            '<!DOCTYPE html><html>' +
+            '<a href="History/Index" class="d-block text-center text-dark">Istoricul exercitiilor</a>' +
+            '<br />' +
+            '<a href="Account/Logout" class="btn start">Deconectare</a></html>');
+
+    </script>
+    <script src="~/js/poseTrainer.js"></script>
+    <script>
+        $.get("/Home/ChooseExercise", function (response) {
+            $("#noteContent").html(response);
+            resizeElements();
+        });
+    </script>
+}

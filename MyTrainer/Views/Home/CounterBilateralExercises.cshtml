@@ -1,0 +1,17 @@
+﻿<div class="exercise d-flex flex-column flex-sm-row justify-content-between align-items-center">
+    <div class="d-flex flex-row align-items-center justify-content-between" style="width:66%">
+        <div class="d-flex flex-column justify-content-center align-items-center mr-2">
+            <p class="text-center text-white" style="font-size:18px;">Repetări stânga</p>
+            <p id="counterLeft" style="font-size:25px; color:cyan;">0</p>
+        </div>
+        <div class="d-flex flex-column justify-content-center align-items-center ml-2">
+            <p class="text-center text-white" style="font-size:18px;">Repetări dreapta</p>
+            <p id="counterRight" style="font-size:25px; color:cyan;">0</p>
+        </div>
+    </div>
+    <button id="stopRepsBilateral" class="btn start">Finalizează</button>
+</div>
+<script>
+    var stopButton = document.getElementById("stopRepsBilateral");
+    stopButton.onclick = stopReps;
+</script>

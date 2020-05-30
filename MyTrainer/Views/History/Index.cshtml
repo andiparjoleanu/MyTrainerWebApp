@@ -1,0 +1,91 @@
+﻿@model IEnumerable<MyTrainer.ViewModels.ExerciseVM>;
+
+@{
+    ViewData["Title"] = "Istoricul meu";
+}
+
+<div class="box">
+    <div class="header container-fluid">
+        <div class="container p-1 d-flex flex-row align-items-center justify-content-between">
+            <a class="font-italic logo" asp-controller="Home" asp-action="Index">
+                <h2 id="logo">MY TRAINER</h2>
+            </a>
+            <div class="d-flex flex-row align-items-center" style="color:cyan; font-family:'Nunito', sans-serif">
+                <i class="fa fa-user-circle-o" style="font-size:35px;"></i> <a href="#" id="popi" class="d-inline-block nav-link" style="color:cyan;" data-toggle="popover" data-placement="bottom" title="Some tooltip text!" data-content="Some Content!">@ViewBag.Username</a>
+            </div>
+            
+        </div>
+    </div>
+    <div class="page-content">
+        <div class="container d-flex flex-column flex-sm-row align-items-center justify-content-between" style="height: 150px;">
+            <div>
+                <p class="exerciseType" style="color: white;">Afișați istoricul pentru</p>
+                @if (Model.Any())
+                {
+                    <select id="selectExerciseHistory" class="form-control" style="background-color:black; color:cyan; border-color:cyan;">
+                        @foreach (var item in Model)
+                        {
+                            <option value="@item.Id+@item.Type" class="selectExerciseHistory">
+                                @item.Name
+                            </option>
+                        }
+
+                    </select>
+                }
+                else
+                {
+                    <p class="font-italic" style="color:cyan;"><i class="fa fa-ban"></i> Nu există exerciții disponibile</p>
+                }
+            </div>
+            <button id="showHistory" class="btn start">Afișează istoric</button>
+        </div>
+        <div id="userExerciseHistory"></div>
+    </div>
+    <div class="note w-100">
+
+    </div>
+</div>
+
+@section Scripts {
+    
+    <script>
+        $(function () {
+            $('[data-toggle="popover"]').popover({
+                html: true
+            })
+        });
+
+        var popi = document.getElementById("popi");
+
+        popi.title = '<span class="text-center d-block">Contul meu</span>';
+        popi.setAttribute("data-content",
+            '<!DOCTYPE html><html>' +
+            '<a href="#" class="d-block text-center text-dark">Istoricul exercitiilor</a>' +
+            '<br />' +
+            '<a href="../Account/Logout" class="btn start">Deconectare</a></html>');
+
+    </script>
+    <script>
+        var showHistory = document.getElementById("showHistory");
+        showHistory.addEventListener("click", function () {
+            let exercise = document.getElementById("selectExerciseHistory").value;
+            var values = exercise.split("+");
+            if (values[1] == 'Unilateral') {
+                $.get("SearchUserUnilateralHistory?exerciseId=" + values[0])
+                    .done(function (response) {
+                        $("#userExerciseHistory").html(response);
+                        console.log("done");
+                    });
+            }
+            else {
+                $.get("SearchUserBilateralHistory?exerciseId=" + values[0])
+                    .done(function (response) {
+                        $("#userExerciseHistory").html(response);
+                        console.log("done");
+                    });
+            }
+            
+        });
+
+    </script>
+}

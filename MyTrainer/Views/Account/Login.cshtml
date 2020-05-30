@@ -1,0 +1,31 @@
+﻿@model MyTrainer.ViewModels.LoginVM
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="h-100 w-100 d-flex align-content-center justify-content-center" style="background-color:black;">
+    <div class="d-flex flex-column align-items-center justify-content-center">
+        <h2 style="font-family:'Anton', sans-serif; color:cyan;" class="font-italic">MY TRAINER</h2>
+        <form asp-action="Login" asp-controller="Account" class="d-flex flex-column align-items-center justify-content-center">
+            <div class="m-3"></div>
+            <div>
+                <input asp-for="Username" class="pose-trainer-input form-control" type="text" placeholder="utilizator" />
+                <span asp-validation-for="Username" class="text-white"></span>
+            </div>
+            <div class="m-3"></div>
+            <div>
+                <input asp-for="Password" class="pose-trainer-input form-control" type="password" placeholder="parola" />
+                <span asp-validation-for="Password" class="text-white"></span>
+            </div>
+            <div class="m-3"></div>
+            <input type="submit" value="Autentificare" class="btn start" />
+        </form>
+        <div class="m-3"></div>
+        @if (TempData["TrySignInErrorMessage"] != null)
+        {
+            <p class="font-italic text-white">@TempData["TrySignInErrorMessage"].ToString()</p>
+            <div class="m-3"></div>
+        }
+        <p class="text-white">Dacă nu ai cont, <a asp-action="Register" asp-controller="Account" style="color:cyan;">apasă aici!</a></p>
+    </div>
+</div>
