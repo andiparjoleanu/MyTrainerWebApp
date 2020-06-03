@@ -14,8 +14,10 @@ var pageContent = document.getElementById("pageContent");
 
 var header = document.getElementsByClassName("header")[0];
 
-var width = pageContent.offsetWidth;
+
 var height = pageContent.offsetHeight;
+//var width = pageContent.offsetWidth;
+var width = height * 1.42;
 
 var video = document.getElementById('video');
 video.width = width;
@@ -36,8 +38,9 @@ var myalert = document.getElementById("alert");
 var alertMessage = document.getElementById("alertMessage");
 
 function resizeElements() {
-    width = pageContent.offsetWidth;
+    //width = pageContent.offsetWidth;
     height = pageContent.offsetHeight;
+    width = height * 1.42;
 
     canvas.width = width;
     canvas.height = height; 
@@ -66,16 +69,16 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 // is not detecting a position
 function drawCameraIntoCanvas() {
     // Draw the video element into the canvas
-    ctx.drawImage(video, 0, 0, pageContent.offsetWidth, pageContent.offsetHeight);
+    ctx.drawImage(video, 0, 0, width, height);
     ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, pageContent.offsetWidth, pageContent.offsetHeight);
+    ctx.fillRect(0, 0, width, height);
     ctx.lineWidth = 5;
     ctx.fillStyle = '#00FFFF';
     ctx.strokeStyle = '#00FFFF';
 
     // We can call both functions to draw all keypoints and the skeletons
-    drawKeypoints();
     drawSkeleton();
+    drawKeypoints();
     window.requestAnimationFrame(drawCameraIntoCanvas);
 }
 // Loop over the drawCameraIntoCanvas function
@@ -92,7 +95,7 @@ function gotPoses(results) {
 
 function modelReady() {
     console.log("model ready");
-    poseNet.multiPose(video)
+    poseNet.singlePose(video)
 }
 
 var countStarted = false;
@@ -109,6 +112,8 @@ class Status {
 var leftStatus = new Status(false, false, 0);
 var rightStatus = new Status(false, false, 0);
 
+var previousKeypoints = [];
+
 // A function to draw ellipses over the detected keypoints
 function drawKeypoints() {
     // Loop through all the poses detected
@@ -117,13 +122,30 @@ function drawKeypoints() {
         // For each pose detected, loop through all the keypoints
         for (let j = 0; j < currentPose.pose.keypoints.length; j++) {
             let keypoint = currentPose.pose.keypoints[j];
+
+            if (previousKeypoints.length < currentPose.pose.keypoints.length) {
+                previousKeypoints.push(currentPose.pose.keypoints[j]);
+            }
+
             // Only draw an ellipse if the pose probability is bigger than 0.2
             if (keypoint.score > 0.2) {
+                ctx.fillStyle = '#00FFFF';
+                ctx.strokeStyle = '#00FFFF';
                 ctx.beginPath();
                 ctx.arc(keypoint.position.x, keypoint.position.y, 5, 0, 2 * Math.PI);
-                //console.log("(" + keypoint.position.x + ", " + keypoint.position.y + ")");
                 ctx.fill();
                 ctx.stroke();
+                previousKeypoints[j] = keypoint;
+            }
+            else {
+                if (previousKeypoints[j].score > 0.2) {
+                    ctx.fillStyle = '#FF00FF';
+                    ctx.strokeStyle = '#FF00FF';
+                    ctx.beginPath();
+                    ctx.arc(previousKeypoints[j].position.x, previousKeypoints[j].position.y, 5, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
+                }
             }
         }
 
@@ -131,6 +153,8 @@ function drawKeypoints() {
             evaluate(currentPose);
         }
 
+    } else {
+        previousKeypoints = [];
     }
 }
 
@@ -149,20 +173,46 @@ function dotProduct(vector1, vector2) {
     return result;
 }
 
+var previousSkeleton = [];
 // A function to draw the skeletons
 function drawSkeleton() {
+    ctx.fillStyle = '#00FFFF';
+    ctx.strokeStyle = '#00FFFF';
     // Loop through all the skeletons detected
-    for (let i = 0; i < poses.length; i++) {
-        // For every skeleton, loop through all body connections
-        for (let j = 0; j < poses[i].skeleton.length; j++) {
-            let partA = poses[i].skeleton[j][0];
-            let partB = poses[i].skeleton[j][1];
+    if (poses[0] != undefined) {
+        for (let j = 0; j < poses[0].skeleton.length; j++) {
+            if (previousSkeleton.length < poses[0].skeleton.length) {
+                previousSkeleton.push(poses[0].skeleton[j]);
+            }
+
+            let partA = poses[0].skeleton[j][0];
+            let partB = poses[0].skeleton[j][1];
+
+            let partA1 = partA, partB1 = partB;
+            if (partA.score < 0.2) {
+                partA1 = previousSkeleton[j][0];
+            }
+            else {
+                previousSkeleton[j][0] = partA;
+            }
+
+            if (partB.score < 0.2) {
+                partB1 = previousSkeleton[j][1];
+            }
+            else {
+                previousSkeleton[j][1] = partB;
+            }
+
             ctx.beginPath();
-            ctx.moveTo(partA.position.x, partA.position.y);
-            ctx.lineTo(partB.position.x, partB.position.y);
+            ctx.moveTo(partA1.position.x, partA1.position.y);
+            ctx.lineTo(partB1.position.x, partB1.position.y);
             ctx.stroke();
         }
     }
+    else {
+        previousSkeleton = [];
+    }
+    
 }
 
 function evaluate() {}
