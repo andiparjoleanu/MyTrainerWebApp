@@ -1,29 +1,27 @@
 ﻿@{
     ViewData["Title"] = "Antrenamente acasă";
-    //var member = await _accountClient.GetCurrentClient();
 }
 
 <div class="box">
-    <div class="header container-fluid">
+    <div id="header" class="header container-fluid">
         <div class="container p-1 d-flex flex-row align-items-center justify-content-between">
             <div class="font-italic">
-                <h2>MY TRAINER</h2>
+                <h1>MY TRAINER</h1>
             </div>
             <div class="d-flex flex-row align-items-center" style="color:cyan; font-family:'Nunito', sans-serif">
-                <i class="fa fa-user-circle-o" style="font-size:35px;"></i> <a href="#" id="popi" class="d-inline-block nav-link" style="color:cyan;" data-toggle="popover" data-placement="bottom" title="Some tooltip text!" data-content="Some Content!">@ViewBag.Username</a>
+                <i id="userIcon" class="fa fa-user-circle-o" style="font-size:40px;"></i> <a href="#" id="popi" class="d-inline-block nav-link" style="color:cyan;" data-toggle="popover" data-placement="bottom" title="Some tooltip text!" data-content="Some Content!">@ViewBag.Username</a>
             </div>
         </div>
     </div>
     <div id="pageContent" class="page-content">
         <div class="d-flex flex-column align-items-center justify-content-center">
-            <canvas id="canvas" style="position:absolute; transform: rotateY(180deg); -webkit-transform: rotateY(180deg); -moz-transform: rotateY(180deg);"></canvas>
-            
-            <video id="video" autoplay style="display: none; position: absolute; transform: rotateY(180deg); -webkit-transform: rotateY(180deg); -moz-transform: rotateY(180deg);"></video>
+            <canvas id="canvas"></canvas>           
+            <video id="video" autoplay width="1920" height="1080" style="display: none; position: absolute; transform: rotateY(180deg); -webkit-transform: rotateY(180deg); -moz-transform: rotateY(180deg);"></video>
         </div>
     </div>
     <div class="note w-100 position-relative">
         <div class="container-fluid warning" id="alert">
-            <p class="text-center" style="font-family: 'Anton', sans-serif; color: cyan; font-size: 30px; font-style: italic;">
+            <p class="text-center" style="font-family: 'Anton', sans-serif; color: cyan; font-size: 32px; font-style: italic;">
                 ATENȚIE!
             </p>
             <p class="text-center" id="alertMessage" style="font-size: 18px;">mesaj.</p>
@@ -39,6 +37,8 @@
                 html: true
             })
         });
+
+        var logoutStyle = ((proTheme) ? "proLogout" : "start");
 
         var popi = document.getElementById("popi");
 

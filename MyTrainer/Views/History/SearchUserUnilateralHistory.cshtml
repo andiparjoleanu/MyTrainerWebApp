@@ -12,6 +12,9 @@
                     Data
                 </th>
                 <th>
+                    Ora
+                </th>
+                <th>
                     Repetări
                 </th>
             </tr>
@@ -19,14 +22,17 @@
         <tbody>
             @foreach (var item in Model)
             {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Date)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Reps)
-                    </td>
-                </tr>
+            <tr>
+                <td>
+                    @item.Date.ToString("dd/MM/yyyy")
+                </td>
+                <td>
+                    @item.Date.ToString("HH:mm")
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Reps)
+                </td>
+            </tr>
             }
         </tbody>
     </table>

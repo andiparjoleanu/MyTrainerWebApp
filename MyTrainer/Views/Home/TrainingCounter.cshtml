@@ -1,0 +1,12 @@
+﻿<div class="exercise d-flex flex-column flex-md-row justify-content-between align-items-center">
+    <div class="d-flex flex-column justify-content-between align-items-center">
+        <span id="collectMessage" style="color: cyan; font-size:18px;">
+            Colectarea începe în 00:05
+        </span>
+        <p id="timer" class="timer" style="font-size: 40px;">00:10</p>
+    </div>
+    <button id="cancelButton" type="button" class="btn proLogout">Renunță</button>
+</div>
+<script>
+    document.getElementById("cancelButton").addEventListener("click", cancelTimer);
+</script>

@@ -1,8 +1,8 @@
 ﻿@model IEnumerable<MyTrainer.ViewModels.ExerciseVM>;
 
-<div id="exercise" class="exercise d-flex flex-column flex-sm-row justify-content-between align-items-center">
+<div id="exercise" class="exercise d-flex flex-column flex-md-row justify-content-between align-items-center">
     <div id="details">
-        <p class="exerciseType">Alege exercițiul</p>
+        <p class="exerciseType text-center">Alege exercițiul</p>
         @if (Model.Any())
         {
             <select id="selectExercise" class="form-control">
@@ -20,8 +20,17 @@
             <p class="font-italic" style="color:cyan;"><i class="fa fa-ban"></i> Nu există exerciții disponibile</p>
         }
     </div>
-    <button id="start" class="btn start">Începe exercițiul</button>
+    <div class="d-flex flex-row justify-content-between align-items-center">
+        <div>
+            <button id="start" class="btn start d-inline-block">Începe exercițiul</button>
+        </div>
+        <div class="d-flex flex-column justify-content-center align-items-center ml-5 mt-2 mb-2">
+            <p style="color: magenta; margin-bottom: 5px;">Încearcă</p>
+            <button id="pro" class="pro">PRO</button>
+        </div>
+    </div>
 </div>
 <script>
     document.getElementById("start").addEventListener("click", startReps);
+    document.getElementById("pro").addEventListener("click", tryPro);
 </script>

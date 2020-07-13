@@ -1,0 +1,14 @@
+﻿<div class="exercise d-flex flex-column flex-md-row flex-md-wrap justify-content-center justify-content-lg-between align-items-center">
+    <div class="d-flex flex-column justify-content-between align-items-center">
+        <p id="MLClassificationResult" class="proExercise">SE ÎNCARCĂ EXERCIȚIILE...</p>
+        <p id="classifierTimer" class="timer" style="font-size: 30px;">00:05</p>
+    </div>
+    <div class="d-flex flex-row flex-sm-row justify-content-between align-items-center ml-0 ml-md-5 mr-0 mr-md-5">
+        <button id="trainButton" type="button" class="btn proLogout">Adaugă mișcări</button>
+        <button id="MTClassic" type="button" class="ml-5 btn start">Încearcă clasic</button>
+    </div>
+</div>
+<script>
+    document.getElementById("trainButton").addEventListener("click", startTraining);
+    document.getElementById("MTClassic").addEventListener("click", returnToClassic);
+</script>

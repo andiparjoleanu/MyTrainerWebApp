@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,6 +10,9 @@ using Microsoft.Extensions.Logging;
 using MyTrainer;
 using MyTrainer.Models;
 using MyTrainer.ViewModels;
+using Grpc.Core;
+using Microsoft.AspNetCore.Hosting;
+using Newtonsoft.Json.Linq;
 
 namespace MyTrainer.Controllers
 {
@@ -16,12 +20,15 @@ namespace MyTrainer.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public HomeController(UserManager<User> userManager, 
-                              IRepositoryWrapper repositoryWrapper)
+                              IRepositoryWrapper repositoryWrapper,
+                              IWebHostEnvironment webHostEnvironment)
         {
             _userManager = userManager;
             _repositoryWrapper = repositoryWrapper;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet]
@@ -72,6 +79,41 @@ namespace MyTrainer.Controllers
         public IActionResult CounterBilateralExercises()
         {
             return PartialView();
+        }
+
+        [HttpGet]
+        public IActionResult Pro()
+        {
+            return PartialView();
+        }
+
+        [HttpGet]
+        public IActionResult AddExercise()
+        {
+            return PartialView();
+        }
+
+        [HttpGet]
+        public IActionResult TrainingCounter()
+        {
+            return PartialView();
+        }
+
+        [HttpGet]
+        public IActionResult TrainingOptions()
+        {
+            return PartialView();
+        }
+
+        [HttpPost]
+        public IActionResult WriteInputFile(InputFileVM inputFile)
+        {
+            string webRootPath = _webHostEnvironment.WebRootPath;
+            string path = Path.Combine(webRootPath, "model", "auxiliar.json");
+            StreamWriter stream = new StreamWriter(path);
+            stream.Write(inputFile.Content);
+            stream.Close();
+            return Ok();
         }
 
         [HttpPost]

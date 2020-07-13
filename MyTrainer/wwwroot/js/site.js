@@ -1,4 +1,30 @@
-﻿function startReps() {
+﻿/*
+    proTheme: variabila care specifica daca tema de culoare curenta 
+    corespunde versiunii clasice sau pro
+*/
+var proTheme = false;
+
+
+//  label: retine rezultatul clasificarii cadrului video curent
+var label = "";
+
+/*
+    training: indica faptul ca procesul de antrenare a retelei neuronale
+    este in desfasurare
+*/
+var training = false;
+
+
+//  classifying: indica faptul ca procesul de clasificare este in desfasurare
+var classifying = false;
+
+
+//  results: vector care retine rezultatele clasificarii unei secvențe de cadre
+var results = [];
+
+var trainingData = [];
+
+function startReps() {
     var selectExercise = document.getElementById("selectExercise");
     var scriptAndType = selectExercise.value;
     var values = scriptAndType.split("+");
@@ -70,4 +96,350 @@ function stopReps() {
         };
         $.post("Home/SaveRepsUnilateral", reps);
     }
+}
+
+function returnToClassic() {
+    proTheme = false;
+
+    $.get("/Home/ChooseExercise", function (response) {
+        $("#noteContent").html(response);
+        document.getElementById("pro").disabled = false;
+    });
+
+    document.getElementById("header").style.color = "cyan";
+    document.getElementById("popi").style.color = "cyan";
+    document.getElementById("userIcon").style.color = "cyan";
+
+    var popi = document.getElementById("popi");
+
+    popi.setAttribute("data-content",
+        '<!DOCTYPE html><html>' +
+        '<a href="History/Index" class="d-block text-center text-dark">Istoricul exercitiilor</a>' +
+        '<br />' +
+        '<a href="Account/Logout" class="btn start">Deconectare</a></html>');
+
+    stopClassifierCounter();
+}
+
+
+/*
+    tip de strat = dens: - foloseste o functie de activare (functie neliniara)
+    units = 2/3 * no_inputs + no_outputs
+    relu: - f(x) = max(0, x)
+          - cost computational scazut
+    sigmoid: - f(x) = 1/(1 + e^(-x))
+             - cost computational ridicat
+    softmax: - f(x)i = (e^xi)/sum[j=1...k](e^xj), i = 1...k, x=(x1,x2,...xk)
+             - folosita pentru clasificare; rezultatul este un set de probabilitati
+ */
+let options = {
+    inputs: 34,                      
+    task: 'classification',
+    layers: [
+        {
+            type: 'dense',
+            units: 25,
+            activation: 'relu'
+        },
+        {
+            type: 'dense',
+            units: 25,
+            activation: 'sigmoid'
+        },
+        {
+            type: 'dense',
+            activation: 'softmax'
+        }
+    ],
+    debug: false
+};
+
+var neuralNetwork, neuralNetworkAux;
+
+//-------------------------------------------------------
+
+//detalii despre antrenare
+let trainingOptions = {
+    epochs: 100
+};
+
+//functie care se apeleaza la finalul procesului de antrenare
+function finishedTraining() {
+    console.log('Model antrenat');
+    classifying = true;
+
+    //neuralNetworkAux.saveData('trainingData', saveFinished);
+
+    neuralNetwork.saveData('MyTrainer_trainingData', saveFinished);
+}
+
+
+//functie care se apeleaza la finalul salvarii datelor de antrenare
+function saveFinished() {
+    console.log('Model salvat');
+
+    //neuralNetwork = JSON.parse(JSON.stringify(neuralNetworkAux));
+    $.get("/Home/Pro", function (response) {
+        $("#noteContent").html(response);
+        document.getElementById("MLClassificationResult").innerText = "SE ÎNCARCĂ EXERCIȚIILE...";
+        classifyExercises();
+    });
+}
+
+//--------------------------------------------------------
+
+//functie care se apeleaza inainte de antrenarea retelei
+function saveTrainingData() {
+    for (let i = 0; i < trainingData.length; i++) {
+        neuralNetwork.addData(trainingData[i].inputData, trainingData[i].targetData);
+    }
+    neuralNetwork.normalizeData();
+    neuralNetwork.train(trainingOptions, finishedTraining);
+}
+
+function tryPro() {
+    document.getElementById("pro").disabled = true;
+    proTheme = true;
+    $.get("/Home/Pro", function (response) {
+        $("#noteContent").html(response);
+        document.getElementById("trainButton").disabled = true;
+        document.getElementById("MTClassic").disabled = true;
+    });
+
+    document.getElementById("header").style.color = "magenta";
+    document.getElementById("popi").style.color = "magenta";
+    document.getElementById("userIcon").style.color = "magenta";
+
+    var popi = document.getElementById("popi");
+
+    popi.setAttribute("data-content",
+        '<!DOCTYPE html><html>' +
+        '<a href="History/Index" class="d-block text-center text-dark">Istoricul exercitiilor</a>' +
+        '<br />' +
+        '<a href="Account/Logout" class="btn proLogout">Deconectare</a></html>');
+
+    neuralNetwork = ml5.neuralNetwork(options);
+
+    try {
+        neuralNetwork.loadData('../model/trainingData.json', loadingFinished);
+    }
+    catch (error) {
+        console.log('Nu exista un model antrenat pentru MY TRAINER');
+    }
+}
+
+function loadingFinished() {
+    neuralNetwork.normalizeData();
+    neuralNetwork.train(trainingOptions, startupTraining);
+}
+
+function startupTraining() {
+    console.log('Model antrenat');
+    classifying = true;
+    classifyExercises();
+    document.getElementById("trainButton").disabled = false;
+    document.getElementById("MTClassic").disabled = false;
+}
+
+
+function saveExercises() {
+    document.getElementById("saveExercises").disabled = true;
+    saveTrainingData();
+}
+
+function startTraining() {
+    document.getElementById("trainButton").disabled = true;
+    stopClassifierCounter();
+    classifying = false;
+
+    neuralNetwork = ml5.neuralNetwork(options);
+    for (let i = 0; i < trainingData.length; i++) {
+        neuralNetwork.addData(trainingData[i].inputData, trainingData[i].targetData);
+    }
+    try {
+        neuralNetwork.loadData('../model/trainingData.json', loadingFinishedAux);
+    }
+    catch (error) {
+        console.log('Nu exista un model antrenat pentru MY TRAINER');
+    }
+}
+
+function loadingFinishedAux() {
+    $.get("/Home/AddExercise", function (response) {
+        $("#noteContent").html(response);
+        document.getElementById("startTrainingCount").disabled = false;
+        document.getElementById("saveExercises").disabled = false;
+    });
+}
+
+var startTimeout, cancelTimeout, counterInterval, collectingInterval;
+let collectMessage;
+
+function cancelTimer() {
+    console.log('Finalizare colectare');
+    training = false;
+
+    clearTimeout(startTimeout);
+    clearTimeout(cancelTimeout);
+    clearInterval(counterInterval);
+    clearInterval(collectingInterval);
+
+    $.get("/Home/TrainingOptions", function (response) {
+        $("#noteContent").html(response);
+        document.getElementById("addExample").disabled = false;
+    });
+}
+
+//define move
+var targetLabel = "";
+
+function nameIntroduced() {
+    let firstStep = true;
+
+    collectingInterval = setInterval(function () {
+        if (firstStep) {
+            collectMessage = document.getElementById("collectMessage");
+            collectMessage.innerText = "Colectarea începe în 00:04";
+            firstStep = false;
+        }
+        else {
+            let collectMessageText = collectMessage.innerText.split(":");
+            let collectMessageTimer = parseInt(collectMessageText[1]);
+            collectMessageTimer = collectMessageTimer - 1;
+            document.getElementById("collectMessage").innerText = "Colectarea începe în 00:0" + collectMessageTimer;
+        }
+    }, 1000);
+
+    startTimeout = setTimeout(function () {
+
+        clearInterval(collectingInterval);
+        collectMessage.innerText = "";
+
+        training = true;
+        console.log('Colectare date');
+
+        counterInterval = setInterval(function () {
+            let timer = document.getElementById("timer");
+            let timerText = timer.innerText.split(":");
+            let timerValue = parseInt(timerText[1]);
+            timerValue = timerValue - 1;
+            document.getElementById("timer").innerText = "00:0" + timerValue;
+        }, 1000);
+
+        cancelTimeout = setTimeout(function () {
+            cancelTimer();
+        }, 10000);
+    }, 5000);
+}
+
+//---------------------------------------------------------
+
+function startCount() {
+    document.getElementById("startTrainingCount").disabled = true;
+    var nameInput = document.getElementById("exerciseName");
+    targetLabel = nameInput.value;
+
+    $.get("/Home/TrainingCounter", function (response) {
+        $("#noteContent").html(response);
+    });
+   
+    nameIntroduced();
+}
+
+function addMoreExercises() {
+    $.get("/Home/AddExercise", function (response) {
+        $("#noteContent").html(response);
+        document.getElementById("startTrainingCount").disabled = false;
+        document.getElementById("saveExercises").disabled = false;
+    });
+}
+
+function addExample() {
+    document.getElementById("addExample").disabled = true;
+    $.get("/Home/TrainingCounter", function (response) {
+        $("#noteContent").html(response);
+    });
+
+    nameIntroduced();
+}
+
+var classifierCounterInterval, classifierTimeout;
+
+function classifyExercises() {
+    classifierCounterInterval = setInterval(function () {
+        let timer = document.getElementById("classifierTimer");
+        let timerText = timer.innerText.split(":");
+        let timerValue = parseInt(timerText[1]);
+        timerValue = timerValue - 1;
+        document.getElementById("classifierTimer").innerText = "00:0" + timerValue;
+        if (timerValue === 0) {
+            timer.style.color = "red";
+        } else {
+            timer.style.color = "white";
+        }
+        document.getElementById("MLClassificationResult").style.color = "magenta";
+    }, 1000);
+
+    classifierTimeout = setTimeout(function() {
+        let mlClassificationResult = document.getElementById("MLClassificationResult");
+        mlClassificationResult.style.color = "white";
+
+        if (results.length === 0) {
+            if (mlClassificationResult) {
+                mlClassificationResult.innerText = "DETECȚIE NEREUȘITĂ";
+            }
+        }
+        else {
+            let resultsDictionary = [];
+            for (let i = 0; i < results.length; i++) {
+                let j = 0;
+                for (; j < resultsDictionary.length; j++) {
+                    if (results[i] === resultsDictionary[j].name) {
+                        resultsDictionary[j].count += 1;
+                        break;
+                    }
+                }
+
+                if (j === resultsDictionary.length) {
+                    resultsDictionary.push({
+                        name: results[i],
+                        count: 1
+                    });
+                }
+            }
+
+            sortedResults = resultsDictionary.sort((obj1, obj2) => obj2.count - obj1.count);
+
+            console.log(sortedResults);
+
+            if (mlClassificationResult && sortedResults.length > 0) {
+                mlClassificationResult.innerText = sortedResults[0].name;
+            }
+        }
+
+        results = [];
+        resetCounter();
+    }, 6000);
+}
+
+function resetCounter() {
+    clearInterval(classifierCounterInterval);
+    clearTimeout(classifierTimeout);
+
+    let classifierTimer = document.getElementById("classifierTimer");
+    classifierTimer.innerText = "00:05";
+    classifierTimer.style.color = "green";
+
+    classifyExercises();
+}
+
+function stopClassifierCounter() {
+    clearInterval(classifierCounterInterval);
+    clearTimeout(classifierTimeout);
+
+    document.getElementById("classifierTimer").innerText = "00:05";
+}
+
+function loadInputFileFinished() {
+    document.getElementById("saveExercises").disabled = false;
 }

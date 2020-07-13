@@ -84,6 +84,7 @@ body
     display: flex;
     flex-flow: column;
     height: 100%;
+    position: relative;
 }
 
     .box .header {
@@ -95,6 +96,14 @@ body
 
     .box .page-content {
         flex: 1 1 auto;
+        /*position: absolute;*/
+        transform: rotateY(180deg);
+        -webkit-transform: rotateY(180deg);
+        -moz-transform: rotateY(180deg);
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
         background-color: black;
     }
 
@@ -112,7 +121,7 @@ body
 
 .exercise {
     width: 80%;
-    height: 150px;
+    height: 180px;
     color: white;
 }
 
@@ -127,8 +136,18 @@ body
     color: white;
 }
 
+.proLogout {
+    background-color: black;
+    color: magenta;
+    border: 1px solid magenta;
+}
+
+.proLogout:hover {
+    color: white;
+}
+
 .exerciseType {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .warning {
@@ -171,6 +190,62 @@ body
 .selectExerciseHistory:hover {
     background-color: cyan;
     color: white;
+}
+
+.pro {
+    border-radius: 50%;
+    border: solid 1px magenta;
+    color: magenta;
+    text-align: center;
+    background-color: black;
+    font-style: italic;
+    text-shadow: 2px;
+    padding: 10px;
+}
+
+.pro:hover {
+    color: white;
+}
+
+.proExercise {
+    background-color: black;
+    color: magenta;
+    font-family: 'Anton', sans-serif;
+    font-size: 30px;
+    font-style: italic;
+}
+
+.timer {
+    font-family: 'Anton', sans-serif;
+    font-style: italic;
+}
+
+.bar {
+    width: 150px;
+    background-color: ghostwhite;
+}
+
+.progressBar {
+    width: 1%;
+    height: 30px;
+    background-color: magenta;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-button {
+    border: 1px solid magenta;
+    border-radius: 5px;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+    background-color: white;
+    color: rgb(80, 80, 80);
+    width: 200px;
+    height: 35px;
+    overflow: hidden;
 }
 
 @media (max-width: 540px) {

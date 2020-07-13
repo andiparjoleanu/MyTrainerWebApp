@@ -12,6 +12,9 @@
                     Data
                 </th>
                 <th>
+                    Ora
+                </th>
+                <th>
                     Repetări stânga
                 </th>
                 <th>
@@ -24,7 +27,10 @@
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Date)
+                        @item.Date.ToString("dd/MM/yyyy")
+                    </td>
+                    <td>
+                        @item.Date.ToString("HH:mm")
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.LeftSideReps)

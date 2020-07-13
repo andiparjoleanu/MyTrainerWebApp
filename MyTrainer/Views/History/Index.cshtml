@@ -16,8 +16,8 @@
             
         </div>
     </div>
-    <div class="page-content">
-        <div class="container d-flex flex-column flex-sm-row align-items-center justify-content-between" style="height: 150px;">
+    <div id="pageContent" class="page-content">
+        <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between" style="height: 150px;">
             <div>
                 <p class="exerciseType" style="color: white;">Afișați istoricul pentru</p>
                 @if (Model.Any())
@@ -47,7 +47,11 @@
 </div>
 
 @section Scripts {
-    
+    <script>
+        var historyPageContent = document.getElementById("pageContent");
+        historyPageContent.style.transform = "rotateY(0deg)";
+        historyPageContent.style.webkitTransform = "rotateY(0deg)";
+    </script>
     <script>
         $(function () {
             $('[data-toggle="popover"]').popover({

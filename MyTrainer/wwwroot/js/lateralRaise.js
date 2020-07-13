@@ -80,8 +80,6 @@
             }
 
             var status;
-            var direction;
-            var prevAngle;
 
             if (side.localeCompare("left") === 0) {
                 status = leftStatus;
