@@ -78,12 +78,12 @@ function neuralNetworkProcessing() {
 
             let target = [targetLabel];
 
-            trainingData.push({
+            /*trainingData.push({
                 inputData: inputs,
                 targetData: target
-            });
+            });*/
 
-            //neuralNetworkAux.addData(inputs, target);
+            neuralNetwork.addData(inputs, target);
         }
     } else if (classifying) {
         if (poses[0] !== undefined) {

@@ -24,6 +24,8 @@ var results = [];
 
 var trainingData = [];
 
+var isTrained = false;
+
 function startReps() {
     var selectExercise = document.getElementById("selectExercise");
     var scriptAndType = selectExercise.value;
@@ -100,6 +102,7 @@ function stopReps() {
 
 function returnToClassic() {
     proTheme = false;
+    stopClassifierCounter();
 
     $.get("/Home/ChooseExercise", function (response) {
         $("#noteContent").html(response);
@@ -117,8 +120,6 @@ function returnToClassic() {
         '<a href="History/Index" class="d-block text-center text-dark">Istoricul exercitiilor</a>' +
         '<br />' +
         '<a href="Account/Logout" class="btn start">Deconectare</a></html>');
-
-    stopClassifierCounter();
 }
 
 
@@ -154,7 +155,7 @@ let options = {
     debug: false
 };
 
-var neuralNetwork, neuralNetworkAux;
+var neuralNetwork;
 
 //-------------------------------------------------------
 
@@ -163,48 +164,49 @@ let trainingOptions = {
     epochs: 100
 };
 
+//--------------------------------------------------------
+
+//functie care se apeleaza inainte de antrenarea retelei
+function saveTrainingData() {
+    /*for (let i = 0; i < trainingData.length; i++) {
+        neuralNetwork.addData(trainingData[i].inputData, trainingData[i].targetData);
+    }*/
+    neuralNetwork.normalizeData();
+    neuralNetwork.train(trainingOptions, finishedTraining);
+}
+
 //functie care se apeleaza la finalul procesului de antrenare
 function finishedTraining() {
     console.log('Model antrenat');
+    isTrained = true;
     classifying = true;
 
-    //neuralNetworkAux.saveData('trainingData', saveFinished);
+    neuralNetwork.saveData('MyTrainer_trainingData');
 
-    neuralNetwork.saveData('MyTrainer_trainingData', saveFinished);
-}
-
-
-//functie care se apeleaza la finalul salvarii datelor de antrenare
-function saveFinished() {
-    console.log('Model salvat');
-
-    //neuralNetwork = JSON.parse(JSON.stringify(neuralNetworkAux));
-    $.get("/Home/Pro", function (response) {
+    $.get("/Home/ClassifierCounter", function (response) {
         $("#noteContent").html(response);
         document.getElementById("MLClassificationResult").innerText = "SE ÎNCARCĂ EXERCIȚIILE...";
         classifyExercises();
     });
 }
 
-//--------------------------------------------------------
-
-//functie care se apeleaza inainte de antrenarea retelei
-function saveTrainingData() {
-    for (let i = 0; i < trainingData.length; i++) {
-        neuralNetwork.addData(trainingData[i].inputData, trainingData[i].targetData);
-    }
-    neuralNetwork.normalizeData();
-    neuralNetwork.train(trainingOptions, finishedTraining);
-}
-
 function tryPro() {
     document.getElementById("pro").disabled = true;
     proTheme = true;
-    $.get("/Home/Pro", function (response) {
-        $("#noteContent").html(response);
-        document.getElementById("trainButton").disabled = true;
-        document.getElementById("MTClassic").disabled = true;
-    });
+    if (!isTrained) {
+        $.get("/Home/Pro", function (response) {
+            $("#noteContent").html(response);
+        });
+
+        neuralNetwork = ml5.neuralNetwork(options);
+        console.log(neuralNetwork);
+    } else {
+        classifying = true;
+        $.get("/Home/ClassifierCounter", function (response) {
+            $("#noteContent").html(response);
+            classifyExercises();
+        });
+    }
 
     document.getElementById("header").style.color = "magenta";
     document.getElementById("popi").style.color = "magenta";
@@ -217,15 +219,6 @@ function tryPro() {
         '<a href="History/Index" class="d-block text-center text-dark">Istoricul exercitiilor</a>' +
         '<br />' +
         '<a href="Account/Logout" class="btn proLogout">Deconectare</a></html>');
-
-    neuralNetwork = ml5.neuralNetwork(options);
-
-    try {
-        neuralNetwork.loadData('../model/trainingData.json', loadingFinished);
-    }
-    catch (error) {
-        console.log('Nu exista un model antrenat pentru MY TRAINER');
-    }
 }
 
 function loadingFinished() {
@@ -235,6 +228,7 @@ function loadingFinished() {
 
 function startupTraining() {
     console.log('Model antrenat');
+    isTrained = true;
     classifying = true;
     classifyExercises();
     document.getElementById("trainButton").disabled = false;
@@ -249,27 +243,25 @@ function saveExercises() {
 
 function startTraining() {
     document.getElementById("trainButton").disabled = true;
-    stopClassifierCounter();
     classifying = false;
 
-    neuralNetwork = ml5.neuralNetwork(options);
-    for (let i = 0; i < trainingData.length; i++) {
-        neuralNetwork.addData(trainingData[i].inputData, trainingData[i].targetData);
-    }
-    try {
-        neuralNetwork.loadData('../model/trainingData.json', loadingFinishedAux);
-    }
-    catch (error) {
-        console.log('Nu exista un model antrenat pentru MY TRAINER');
-    }
-}
-
-function loadingFinishedAux() {
     $.get("/Home/AddExercise", function (response) {
         $("#noteContent").html(response);
-        document.getElementById("startTrainingCount").disabled = false;
-        document.getElementById("saveExercises").disabled = false;
+        document.getElementById("startTrainingCount").disabled = true;
+        document.getElementById("saveExercises").disabled = true;
+
+        try {
+            neuralNetwork.loadData('../model/trainingData.json', loadingFinishedTraining);
+        }
+        catch (error) {
+            console.log('Nu exista un model antrenat pentru MY TRAINER');
+        }
     });
+}
+
+function loadingFinishedTraining() {
+    document.getElementById("startTrainingCount").disabled = false;
+    document.getElementById("saveExercises").disabled = false;
 }
 
 var startTimeout, cancelTimeout, counterInterval, collectingInterval;
@@ -336,6 +328,7 @@ function nameIntroduced() {
 
 function startCount() {
     document.getElementById("startTrainingCount").disabled = true;
+    document.getElementById("saveExercises").disabled = true;
     var nameInput = document.getElementById("exerciseName");
     targetLabel = nameInput.value;
 
@@ -440,6 +433,28 @@ function stopClassifierCounter() {
     document.getElementById("classifierTimer").innerText = "00:05";
 }
 
-function loadInputFileFinished() {
-    document.getElementById("saveExercises").disabled = false;
+function tryingBaseSet() {
+    document.getElementById("tryBaseSet").disabled = true;
+    document.getElementById("trainButton").disabled = true;
+    document.getElementById("inputFile").disabled = true;
+    try {
+        neuralNetwork.loadData('../model/trainingData.json', loadingFinishedTryBaseSet);
+    }
+    catch (error) {
+        console.log('Nu exista un model antrenat pentru MY TRAINER');
+    }
+}
+
+function loadingFinishedTryBaseSet() {
+    neuralNetwork.normalizeData();
+    neuralNetwork.train(trainingOptions, finishedTrainingBaseSet);
+}
+
+function finishedTrainingBaseSet() {
+    isTrained = true;
+    classifying = true;
+    $.get("/Home/ClassifierCounter", function (response) {
+        $("#noteContent").html(response);
+        classifyExercises();
+    });
 }

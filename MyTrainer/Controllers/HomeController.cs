@@ -88,6 +88,12 @@ namespace MyTrainer.Controllers
         }
 
         [HttpGet]
+        public IActionResult ClassifierCounter()
+        {
+            return PartialView();
+        }
+
+        [HttpGet]
         public IActionResult AddExercise()
         {
             return PartialView();
